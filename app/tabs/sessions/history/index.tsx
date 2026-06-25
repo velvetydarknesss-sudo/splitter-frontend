@@ -174,7 +174,7 @@ export default function SessionsHistoryScreen() {
           const dateForSummary = bill.finalizedAt || bill.createdAt;
           const summary = `${formatSessionDate(dateForSummary)} ${BULLET} ${participants.length} ishtirokchi`;
           const totalAmount = bill.grandTotal ?? 0;
-          const currency = bill.currency || bill.totals?.currency || bill.payload?.totals?.currency || DEFAULT_CURRENCY;
+          const currency = bill.currency || bill.payload?.totals?.currency || bill.payload?.currency || DEFAULT_CURRENCY;
           const amountLabel = `${currency} ${totalAmount.toLocaleString()}`;
           return (
             <HistoryCard

@@ -55,12 +55,22 @@ const normalizeEntry = (raw: SessionHistoryEntryRaw): SessionHistoryEntry => {
   const grandTotal =
     typeof raw.grandTotal === 'number' ? raw.grandTotal : p?.totals?.grandTotal ?? 0;
 
+  // BUG FIX: Extract currency from payload so it is accessible at the entry level.
+  // Previously, currency was only buried inside payload.totals.currency and never
+  // mapped to the top-level SessionHistoryEntry, causing the history screens to
+  // always display the hardcoded fallback 'UZS' regardless of the actual currency.
+  const currency =
+    p?.totals?.currency ||
+    p?.currency ||
+    undefined;
+
   return {
     sessionId: raw.sessionId ?? p?.sessionId ?? 0,
     sessionName: raw.sessionName || p?.sessionName || 'Bill',
     finalizedAt,
     createdAt,
     grandTotal,
+    currency,
     participantUniqueIds: raw.participantUniqueIds ?? [],
     totals: p?.totals,
     allocations: p?.allocations ?? [],

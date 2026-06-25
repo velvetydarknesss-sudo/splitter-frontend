@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { YStack, XStack, Text, ScrollView, Button } from 'tamagui';
+import { YStack, XStack, Text, ScrollView, Button, Spinner } from 'tamagui';
+import { CheckCircle2, Circle } from '@tamagui/lucide-icons';
 
 import UserAvatar from '@/shared/ui/UserAvatar';
 import { useSessionsHistoryStore } from '@/features/sessions/model/history.store';
+import { useSettlementsStore } from '@/features/sessions/model/settlements.store';
 import type {
   SessionHistoryEntry,
   SessionHistoryAllocation,
@@ -109,6 +111,32 @@ export default function HistoryDetailsScreen() {
     }
   }, [initialized, loading, currentLimit, fetchHistory, bill]);
 
+  // Settlements logic
+  const fetchSettlements = useSettlementsStore(state => state.fetchSettlements);
+  const markSettled = useSettlementsStore(state => state.markSettled);
+  const unmarkSettled = useSettlementsStore(state => state.unmarkSettled);
+  const isSettled = useSettlementsStore(state => state.isSettled);
+  const settlementsLoading = useSettlementsStore(state => state.loadingMap[bill?.sessionId ?? 0]);
+
+  useEffect(() => {
+    if (bill?.sessionId) {
+      fetchSettlements(bill.sessionId).catch(() => {});
+    }
+  }, [bill?.sessionId, fetchSettlements]);
+
+  const toggleSettlement = async (uniqueId: string, currentStatus: boolean, amount: number) => {
+    if (!bill?.sessionId) return;
+    try {
+      if (currentStatus) {
+        await unmarkSettled(bill.sessionId, uniqueId);
+      } else {
+        await markSettled(bill.sessionId, uniqueId, amount);
+      }
+    } catch (err) {
+      console.error('Failed to toggle settlement', err);
+    }
+  };
+
   const participants = useMemo(() => buildParticipantsView(bill), [bill]);
   const currency =
     bill?.currency ||
@@ -201,6 +229,26 @@ export default function HistoryDetailsScreen() {
                 </Text>
               )}
             </YStack>
+
+            <XStack jc="flex-end" pt="$2" borderTopWidth={1} borderColor="$gray5">
+              <Button
+                size="$3"
+                chromeless
+                p={0}
+                m={0}
+                onPress={() => toggleSettlement(participant.uniqueId, isSettled(bill.sessionId, participant.uniqueId), amount)}
+                disabled={settlementsLoading}
+                opacity={settlementsLoading ? 0.5 : 1}
+                icon={
+                  settlementsLoading ? <Spinner size="small" /> :
+                  isSettled(bill.sessionId, participant.uniqueId) ? <CheckCircle2 size={20} color="#2ECC71" /> : <Circle size={20} color="$gray9" />
+                }
+              >
+                <Text fontSize={14} fontWeight="600" color={isSettled(bill.sessionId, participant.uniqueId) ? "#2ECC71" : "$gray10"}>
+                  {isSettled(bill.sessionId, participant.uniqueId) ? 'Toʻlangan' : 'Toʻlanmagan'}
+                </Text>
+              </Button>
+            </XStack>
           </YStack>
         ))}
       </ScrollView>

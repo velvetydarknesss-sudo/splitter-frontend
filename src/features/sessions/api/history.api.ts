@@ -38,7 +38,9 @@ export type SessionHistoryPayload = {
     byItem: SessionHistoryTotalsByItem[];
     grandTotal: number;
     byParticipant: SessionHistoryTotalsByParticipant[];
+    currency?: string;
   };
+  currency?: string;
   createdAt: string; // ISO
   sessionId: number;
   allocations: SessionHistoryAllocation[];
@@ -71,6 +73,8 @@ export interface SessionHistoryEntry {
   finalizedAt?: string;
   createdAt?: string;
   grandTotal: number;
+  /** BUG FIX: currency is now a top-level field, populated from payload.totals.currency or payload.currency */
+  currency?: string;
 
   participantUniqueIds: string[];
 

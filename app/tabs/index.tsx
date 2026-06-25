@@ -272,7 +272,7 @@ export default function HomePage() {
             const dateForSummary = bill.finalizedAt || bill.createdAt;
             const summary = `${formatSessionDate(dateForSummary, i18n.language)} • ${participantsLabel}`;
             const totalAmount = bill.grandTotal ?? 0;
-            const currency = bill.currency || bill.payload?.totals?.currency || DEFAULT_CURRENCY;
+            const currency = bill.currency || bill.payload?.totals?.currency || bill.payload?.currency || DEFAULT_CURRENCY;
             const amountLabel = `${totalAmount.toLocaleString(i18n.language ?? 'en', {
               minimumFractionDigits: 0,
               maximumFractionDigits: 0,
